@@ -1,0 +1,19 @@
+{
+  "logs": [
+    {
+      "path": "/var/log/syslog",
+      "name": "system"
+    },
+    {
+      "path": "/var/log/auth.log",
+      "name": "auth"
+    }
+  ],
+  "patterns": {
+    "error": "error|fail(ed|ure)",
+    "exception": "exception",
+    "fatal": "fatal",
+    "warning": "warning",
+    "critical": "critical"
+  }
+}

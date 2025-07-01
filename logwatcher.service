@@ -1,0 +1,18 @@
+[Unit]
+Description=LogWatcher Service
+After=network.target
+
+[Service]
+Type=forking
+User=root
+Group=root
+WorkingDirectory=%h/path/to/logwatcher
+ExecStart=%h/path/to/logwatcher/watch_log.sh start
+ExecStop=%h/path/to/logwatcher/watch_log.sh stop
+ExecReload=%h/path/to/logwatcher/watch_log.sh restart
+PIDFile=%h/path/to/logwatcher/logwatcher.pid
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
