@@ -166,9 +166,9 @@ class LogWatcher:
         for task in self.tasks:
             if not task.done():
                 task.cancel()
-        
-        # Принудительно завершаем все задачи
-        asyncio.get_event_loop().run_until_complete(asyncio.sleep(0.5))
+                
+        # Не используем run_until_complete, так как это может вызвать ошибку
+        # если функция вызывается из обработчика сигнала
         print(f"{Fore.CYAN}Cleanup complete.{Style.RESET_ALL}")
 
 
@@ -220,14 +220,8 @@ if __name__ == "__main__":
     # Register handler for normal exit
     atexit.register(lambda: print(f"{Fore.CYAN}Log watcher exited.{Style.RESET_ALL}"))
     
-    # Настройка правильной обработки сигналов для корректного завершения
-    def handle_exit(signum, frame):
-        print(f"\n{Fore.CYAN}Received signal {signum}, shutting down...{Style.RESET_ALL}")
-        sys.exit(0)
-        
-    # Регистрируем обработчики для сигналов завершения
-    signal.signal(signal.SIGINT, handle_exit)  # Ctrl+C
-    signal.signal(signal.SIGTERM, handle_exit)  # kill
+    # Не используем обработчики сигналов, так как они могут конфликтовать с asyncio
+    # Полагаемся на обработку KeyboardInterrupt внутри main()
     
     try:
         sys.exit(asyncio.run(main()))
