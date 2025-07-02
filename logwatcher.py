@@ -167,7 +167,8 @@ class LogWatcher:
             if not task.done():
                 task.cancel()
         
-        # Короткая пауза для завершения задач
+        # Принудительно завершаем все задачи
+        asyncio.get_event_loop().run_until_complete(asyncio.sleep(0.5))
         print(f"{Fore.CYAN}Cleanup complete.{Style.RESET_ALL}")
 
 
@@ -205,7 +206,7 @@ async def main():
 
     try:
         await watcher.start()
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, asyncio.CancelledError):
         print(f"\n{Fore.CYAN}Stopping log watcher (Ctrl+C received)...{Style.RESET_ALL}")
         watcher.stop()
     except Exception as e:
@@ -219,11 +220,17 @@ if __name__ == "__main__":
     # Register handler for normal exit
     atexit.register(lambda: print(f"{Fore.CYAN}Log watcher exited.{Style.RESET_ALL}"))
     
-    # Register signal handlers for graceful shutdown
-    if hasattr(signal, 'SIGINT'):  # For handling Ctrl+C
-        signal.signal(signal.SIGINT, lambda signum, frame: print(f"\n{Fore.CYAN}Received Ctrl+C, shutting down gracefully...{Style.RESET_ALL}"))
+    # Настройка правильной обработки сигналов для корректного завершения
+    def handle_exit(signum, frame):
+        print(f"\n{Fore.CYAN}Received signal {signum}, shutting down...{Style.RESET_ALL}")
+        sys.exit(0)
+        
+    # Регистрируем обработчики для сигналов завершения
+    signal.signal(signal.SIGINT, handle_exit)  # Ctrl+C
+    signal.signal(signal.SIGTERM, handle_exit)  # kill
     
-    if hasattr(signal, 'SIGTERM'):  # For handling termination signal (e.g., from systemd)
-        signal.signal(signal.SIGTERM, lambda signum, frame: print(f"\n{Fore.CYAN}Received termination signal, shutting down gracefully...{Style.RESET_ALL}"))
-    
-    sys.exit(asyncio.run(main()))
+    try:
+        sys.exit(asyncio.run(main()))
+    except KeyboardInterrupt:
+        # Если asyncio.run уже завершился из-за KeyboardInterrupt, просто выходим
+        sys.exit(0)
