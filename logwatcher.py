@@ -8,6 +8,8 @@ import argparse
 import sys
 import os
 import json
+import signal
+import atexit
 from datetime import datetime
 from pathlib import Path
 from colorama import Fore, Style, init
@@ -103,7 +105,6 @@ class LogWatcher:
         
         # Wait for the file to appear if it doesn't exist
         while not path.exists():
-            print(f"{Fore.YELLOW}Waiting for file to appear: {file_path}{Style.RESET_ALL}")
             await asyncio.sleep(2)  # Check every 2 seconds
         
         print(
@@ -160,10 +161,14 @@ class LogWatcher:
         await asyncio.gather(*self.tasks)
 
     def stop(self):
-        """Stop all running tasks."""
+        """Stop all running tasks and clean up resources."""
+        print(f"{Fore.CYAN}Stopping all log watchers...{Style.RESET_ALL}")
         for task in self.tasks:
             if not task.done():
                 task.cancel()
+        
+        # Короткая пауза для завершения задач
+        print(f"{Fore.CYAN}Cleanup complete.{Style.RESET_ALL}")
 
 
 def parse_arguments():
@@ -201,7 +206,7 @@ async def main():
     try:
         await watcher.start()
     except KeyboardInterrupt:
-        print(f"\n{Fore.CYAN}Stopping log watcher...{Style.RESET_ALL}")
+        print(f"\n{Fore.CYAN}Stopping log watcher (Ctrl+C received)...{Style.RESET_ALL}")
         watcher.stop()
     except Exception as e:
         print(f"{Fore.RED}Error: {str(e)}{Style.RESET_ALL}")
@@ -211,4 +216,14 @@ async def main():
 
 
 if __name__ == "__main__":
+    # Register handler for normal exit
+    atexit.register(lambda: print(f"{Fore.CYAN}Log watcher exited.{Style.RESET_ALL}"))
+    
+    # Register signal handlers for graceful shutdown
+    if hasattr(signal, 'SIGINT'):  # For handling Ctrl+C
+        signal.signal(signal.SIGINT, lambda signum, frame: print(f"\n{Fore.CYAN}Received Ctrl+C, shutting down gracefully...{Style.RESET_ALL}"))
+    
+    if hasattr(signal, 'SIGTERM'):  # For handling termination signal (e.g., from systemd)
+        signal.signal(signal.SIGTERM, lambda signum, frame: print(f"\n{Fore.CYAN}Received termination signal, shutting down gracefully...{Style.RESET_ALL}"))
+    
     sys.exit(asyncio.run(main()))

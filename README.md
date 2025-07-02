@@ -88,7 +88,7 @@ You can configure LogWatcher using a JSON configuration file:
 #### Configuration Parameters
 
 - **logs**: Array of log files to monitor
-  - `path`: Path to the log file
+  - `path`: Path to the log file (if file doesn't exist yet, LogWatcher will silently wait for it to appear)
   - `name`: Display name for the log (optional, defaults to filename)
 - **patterns**: Regex patterns for error detection (case-insensitive)
   - Key: Error type name (used for color coding)
@@ -144,7 +144,6 @@ You can configure LogWatcher using a JSON configuration file:
   "exclude": ["trace", "verbose"]
 }
 ```
-```
 
 ### Testing
 
@@ -184,10 +183,9 @@ The script handles PID management, logging, and clean shutdowns.
 A utility script for quickly configuring log files to watch:
 
 ```bash
-# Configure multiple log files at once (supports both comma and space separation)
+# Configure multiple log files at once (comma or space separated, with or without quotes)
+./setup_logs.sh --logs /path/to/log1.log /path/to/log2.log
 ./setup_logs.sh --logs /path/to/log1.log,/path/to/log2.log
-# OR
-./setup_logs.sh --logs "/path/to/log1.log /path/to/log2.log"
 
 # Specify custom error patterns
 ./setup_logs.sh --logs /var/log/app.log --patterns error:"error|failed",critical:"urgent|critical"
@@ -223,7 +221,8 @@ sudo systemctl start logwatcher
 - System service integration
 - Automatic failure recovery
 - Case-insensitive pattern matching
-- Monitoring of not-yet-existing log files (waits for files to appear)
+- Monitoring of not-yet-existing log files (silently waits for files to appear and starts monitoring them automatically)
+- Graceful shutdown with Ctrl+C (safe termination of all file watchers)
 
 ## License
 

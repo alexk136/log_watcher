@@ -51,11 +51,17 @@ while [[ $# -gt 0 ]]; do
     key="$1"
     case $key in
         -l|--logs)
-            # Support both comma-separated and space-separated lists
-            # Convert spaces between paths to commas (but preserve spaces within quotes)
-            LOGS=$(echo "$2" | sed 's/ *, */,/g')
+            # Поддержка пробелов и запятых: объединяем все аргументы до следующего ключа в одну строку
             shift
-            shift
+            LOGS=""
+            while [[ $# -gt 0 && ${1:0:1} != "-" ]]; do
+                if [ -z "$LOGS" ]; then
+                    LOGS="$1"
+                else
+                    LOGS="$LOGS,$1"
+                fi
+                shift
+            done
             ;;
         -p|--patterns)
             # Remove all spaces from the comma-separated list for consistent parsing
