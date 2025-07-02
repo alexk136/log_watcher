@@ -7,8 +7,9 @@ Asynchronous log watcher that monitors multiple log files for errors and outputs
 - Asynchronous monitoring of multiple log files simultaneously
 - "Tailing" log files to analyze only new lines (similar to `tail -F`)
 - Searching for errors using regex patterns and keywords
+- **Exclude patterns** - filter out unwanted log entries (debug, deprecated warnings, etc.)
 - Console output with color highlighting for different error types
-- Easy configuration via YAML or JSON files
+- Easy configuration via JSON files
 - Command-line arguments for quick setup
 
 ## Requirements
@@ -74,14 +75,95 @@ You can configure LogWatcher using a JSON configuration file:
     "error": "error|fail(ed|ure)",
     "exception": "exception",
     "fatal": "fatal",
+    "warning": "warning",
+    "critical": "critical"
+  },
+  "exclude": [
+    "deprecated",
+    "debug"
+  ]
+}
+```
+
+#### Configuration Parameters
+
+- **logs**: Array of log files to monitor
+  - `path`: Path to the log file
+  - `name`: Display name for the log (optional, defaults to filename)
+- **patterns**: Regex patterns for error detection (case-insensitive)
+  - Key: Error type name (used for color coding)
+  - Value: Regex pattern to match
+- **exclude**: Array of regex patterns to exclude from monitoring
+  - Lines matching any of these patterns will be ignored
+  - Useful for filtering out noise like debug messages or deprecated warnings
+  - All patterns are case-insensitive
+
+### Examples
+
+#### Basic Error Monitoring
+```json
+{
+  "logs": [{"path": "app.log", "name": "myapp"}],
+  "patterns": {
+    "error": "error",
     "warning": "warning"
   }
 }
 ```
 
+#### Advanced Filtering with Exclusions
+```json
+{
+  "logs": [{"path": "verbose_app.log", "name": "app"}],
+  "patterns": {
+    "error": "error|failed|exception",
+    "critical": "critical|fatal"
+  },
+  "exclude": [
+    "deprecated",
+    "debug",
+    "info.*session",
+    "cache.*miss"
+  ]
+}
+```
+
+#### Multiple Log Files with Different Purposes
+```json
+{
+  "logs": [
+    {"path": "error.log", "name": "errors"},
+    {"path": "access.log", "name": "access"},
+    {"path": "debug.log", "name": "debug"}
+  ],
+  "patterns": {
+    "error": "error|fail",
+    "warning": "warn",
+    "auth": "authentication|authorization"
+  },
+  "exclude": ["trace", "verbose"]
+}
+```
+```
+
+### Testing
+
+LogWatcher includes test scripts to verify functionality:
+
+```bash
+# Run the main test suite (includes exclude functionality testing)
+./run_test.sh
+
+# Test exclude patterns specifically
+python logwatcher.py -c test_exclude_config.json
+
+# Generate test logs for debugging
+python generate_test_logs.py -o test.log -i 0.5
+```
+
 ## Command Line Arguments
 
-- `-c, --config`: Path to configuration file (YAML or JSON)
+- `-c, --config`: Path to configuration file JSON
 - `-l, --logs`: List of log files to watch (space-separated)
 
 ## Production Scripts
@@ -133,10 +215,12 @@ sudo systemctl start logwatcher
 - Color-coded output based on error type
 - Timestamp for each error occurrence
 - Automatic pattern matching with regex support
+- **Exclude patterns** to filter out noise and unwanted log entries
 - Error type classification (ERROR, EXCEPTION, FATAL, etc.)
 - Background operation with service management scripts
 - System service integration
 - Automatic failure recovery
+- Case-insensitive pattern matching
 
 ## License
 
