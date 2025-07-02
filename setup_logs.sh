@@ -51,8 +51,9 @@ while [[ $# -gt 0 ]]; do
     key="$1"
     case $key in
         -l|--logs)
-            # Remove all spaces from the comma-separated list for consistent parsing
-            LOGS=$(echo "$2" | tr -d ' ')
+            # Support both comma-separated and space-separated lists
+            # Convert spaces between paths to commas (but preserve spaces within quotes)
+            LOGS=$(echo "$2" | sed 's/ *, */,/g')
             shift
             shift
             ;;
@@ -101,7 +102,10 @@ for log in "${LOG_ARRAY[@]}"; do
         echo "," >> "$TEMP_CONFIG"
     fi
     
-    # Add log entry
+    # Add log entry with a warning if the file doesn't exist, but still include it
+    if [ ! -f "$log" ]; then
+        echo "Warning: File '$log' does not exist yet, but will be monitored when it appears" >&2
+    fi
     cat >> "$TEMP_CONFIG" << EOF
     {
       "path": "$log",

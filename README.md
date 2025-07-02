@@ -184,8 +184,10 @@ The script handles PID management, logging, and clean shutdowns.
 A utility script for quickly configuring log files to watch:
 
 ```bash
-# Configure multiple log files at once
+# Configure multiple log files at once (supports both comma and space separation)
 ./setup_logs.sh --logs /path/to/log1.log,/path/to/log2.log
+# OR
+./setup_logs.sh --logs "/path/to/log1.log /path/to/log2.log"
 
 # Specify custom error patterns
 ./setup_logs.sh --logs /var/log/app.log --patterns error:"error|failed",critical:"urgent|critical"
@@ -221,6 +223,7 @@ sudo systemctl start logwatcher
 - System service integration
 - Automatic failure recovery
 - Case-insensitive pattern matching
+- Monitoring of not-yet-existing log files (waits for files to appear)
 
 ## License
 

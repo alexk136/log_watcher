@@ -183,8 +183,10 @@ python generate_test_logs.py -o test.log -i 0.5
 Утилита для быстрой генерации конфигурации:
 
 ```bash
-# Настроить мониторинг нескольких логов
+# Настроить мониторинг нескольких логов (поддерживает разделение запятыми и пробелами)
 ./setup_logs.sh --logs /path/to/log1.log,/path/to/log2.log
+# ИЛИ
+./setup_logs.sh --logs "/path/to/log1.log /path/to/log2.log"
 
 # Указать свои паттерны ошибок
 ./setup_logs.sh --logs /var/log/app.log --patterns error:"error|failed",critical:"urgent|critical"
@@ -220,6 +222,7 @@ sudo systemctl start logwatcher
 - Интеграция с systemd
 - Автоматический перезапуск при сбоях
 - Нечувствительность к регистру в паттернах
+- Мониторинг еще не существующих файлов логов (ожидание появления файлов)
 
 ## Лицензия
 

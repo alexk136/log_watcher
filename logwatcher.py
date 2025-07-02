@@ -100,10 +100,12 @@ class LogWatcher:
         log_name = log_info.get("name", os.path.basename(file_path))
 
         path = Path(file_path)
-        if not path.exists():
-            print(f"{Fore.RED}Log file not found: {file_path}{Style.RESET_ALL}")
-            return
-
+        
+        # Wait for the file to appear if it doesn't exist
+        while not path.exists():
+            print(f"{Fore.YELLOW}Waiting for file to appear: {file_path}{Style.RESET_ALL}")
+            await asyncio.sleep(2)  # Check every 2 seconds
+        
         print(
             f"{Fore.GREEN}Started watching: {log_name} ({file_path}){Style.RESET_ALL}"
         )
@@ -175,7 +177,7 @@ def parse_arguments():
         "-c",
         "--config",
         default=default_config,
-        help="Path to configuration file (YAML or JSON)",
+        help="Path to configuration file JSON",
     )
     parser.add_argument("-l", "--logs", nargs="+", help="List of log files to watch")
     return parser.parse_args()
