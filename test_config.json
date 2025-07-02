@@ -15,5 +15,9 @@
     "fatal": "fatal",
     "warning": "warning",
     "critical": "critical"
-  }
+  },
+  "exclude": [
+    "deprecated",
+    "debug"
+  ]
 }

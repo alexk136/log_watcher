@@ -1,12 +1,8 @@
 {
   "logs": [
     {
-      "path": "test_logs/app1.log",
-      "name": "app1"
-    },
-    {
-      "path": "test_logs/app2.log",
-      "name": "app2"
+      "path": "test_logs/exclude_test.log",
+      "name": "exclude_test"
     }
   ],
   "patterns": {

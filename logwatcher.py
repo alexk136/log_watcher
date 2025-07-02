@@ -29,6 +29,7 @@ class LogWatcher:
         """Initialize the LogWatcher with the given configuration."""
         self.config = self._load_config(config_path)
         self.error_patterns = self._compile_patterns(self.config.get('patterns', {}))
+        self.exclude_patterns = self._compile_exclude_patterns(self.config.get('exclude', []))
         self.logs = self.config.get('logs', [])
         self.tasks = []
 
@@ -41,7 +42,8 @@ class LogWatcher:
                 'exception': r'exception',
                 'fatal': r'fatal',
                 'warning': r'warning'
-            }
+            },
+            'exclude': []
         }
         
         if not config_path:
@@ -73,6 +75,16 @@ class LogWatcher:
                 print(f"{Fore.RED}Invalid regex pattern for {error_type}: {pattern}{Style.RESET_ALL}")
         return compiled_patterns
 
+    def _compile_exclude_patterns(self, exclude_list):
+        """Compile exclude regex patterns from the configuration."""
+        compiled_exclude = []
+        for pattern in exclude_list:
+            try:
+                compiled_exclude.append(re.compile(pattern, re.IGNORECASE))
+            except re.error:
+                print(f"{Fore.RED}Invalid exclude regex pattern: {pattern}{Style.RESET_ALL}")
+        return compiled_exclude
+
     async def tail_log(self, log_info):
         """Watch a log file for new lines and check for errors."""
         file_path = log_info['path']
@@ -103,6 +115,12 @@ class LogWatcher:
     def _process_line(self, line, log_name):
         """Process a log line and check for error patterns."""
         line = line.strip()
+        
+        # Check if line should be excluded
+        for exclude_pattern in self.exclude_patterns:
+            if exclude_pattern.search(line):
+                return  # Skip this line
+        
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         
         for error_type, pattern in self.error_patterns.items():

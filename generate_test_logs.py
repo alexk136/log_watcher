@@ -23,7 +23,18 @@ LOG_MESSAGES = [
     "DEBUG: Retrying connection (attempt 3/5)",
     "CRITICAL: Disk space below 5%",
     "INFO: Backup completed successfully",
-    "ERROR: Invalid configuration parameter: max_connections"
+    "ERROR: Invalid configuration parameter: max_connections",
+    "WARNING: Deprecated function usage detected in legacy code",
+    "ERROR: Deprecated API endpoint called: /api/v1/legacy",
+    "DEBUG: Deprecated method will be removed in next version",
+    "INFO: Database query executed successfully",
+    "WARNING: Slow query detected (execution time: 2.5s)",
+    "ERROR: Connection pool exhausted",
+    "DEBUG: Cache miss for key: user_session_123",
+    "INFO: File uploaded successfully: document.pdf",
+    "CRITICAL: Security breach detected in authentication module",
+    "WARNING: Memory leak detected in module: data_processor",
+    "ERROR: Failed to parse JSON response from external API"
 ]
 
 def generate_logs(log_path, interval=1.0, count=None):
